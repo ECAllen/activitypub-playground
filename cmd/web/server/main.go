@@ -2,16 +2,19 @@ package main
 
 import (
 	"crypto/rsa"
-	"crypto/sha1"
-	"encoding/json"
+	"flag"
 	"fmt"
 	pub "github.com/go-ap/activitypub"
+	"github.com/go-chi/chi"
+	// "github.com/go-chi/chi/middleware"
 	"github.com/sirupsen/logrus"
 	"math/rand"
 	"net/http"
 	"os"
+	"time"
 )
 
+// Globals
 var (
 	UserAgent    = "ap-go-http-client"
 	HeaderAccept = `application/ld+json; profile="https://www.w3.org/ns/activitystreams"`
@@ -26,99 +29,52 @@ var (
 	logger = logrus.New()
 )
 
-func inbox(w http.ResponseWriter, r *http.Request) {
-	logger.WithFields(logrus.Fields{"event": "Inbox"}).Trace("Inbox hit")
+type application struct {
+	people []*pub.Person
 }
 
-func actors(w http.ResponseWriter, r *http.Request) {
-	logger.WithFields(logrus.Fields{"event": "Actor"}).Trace("Actor hit")
-	// TODO
-
-	/*
-		get list of actors
-		json marshall actors
-		respond with json
-		items: map[string]*objectVal{
-									"e869bdca-dd5e-4de7-9c5d-37845eccc6a1": {
-										id:      "http://127.0.0.1:9998/actors/e869bdca-dd5e-4de7-9c5d-37845eccc6a1",
-										typ:     string(pub.PersonType),
-										summary: "Generated actor",
-										content: "Generated actor",
-										url:     "http://127.0.0.1:9998/actors/e869bdca-dd5e-4de7-9c5d-37845eccc6a1",
-										inbox: &objectVal{
-											id: "http://127.0.0.1:9998/actors/e869bdca-dd5e-4de7-9c5d-37845eccc6a1/inbox",
-										},
-										outbox: &objectVal{
-											id: "http://127.0.0.1:9998/actors/e869bdca-dd5e-4de7-9c5d-37845eccc6a1/outbox",
-										},
-										liked: &objectVal{
-											id: "http://127.0.0.1:9998/actors/e869bdca-dd5e-4de7-9c5d-37845eccc6a1/liked",
-										},
-										preferredUsername: "johndoe",
-										name:              "Johnathan Doe",
-									},
-								},
-	*/
-
-}
-
-func handlerReqs() {
-	http.HandleFunc("/actors", actors)
-	http.HandleFunc("/inbox", inbox)
-	logger.WithFields(logrus.Fields{"event": "Handle Requests"}).Trace("Handle Reqs")
-	err := http.ListenAndServe(":4000", nil)
-	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"event": "Err Handle Requests",
-			"error": err,
-		}).Fatal("Handle Reqs")
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
+	/* ctx := r.Context()
+	article, ok := ctx.Value("article").(*Article)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
 	}
+	*/
+	w.Write([]byte("OK"))
 }
 
-type Actors struct {
-	Total  int
-	People []*pub.Person
+func (app *application) routes() http.Handler {
+	r := chi.NewRouter()
+	r.Get("/", app.home)
+	return r
 }
-
-func (a *Actors) Add(person *pub.Person) {
-	a.Total++
-	a.People = append(a.People, person)
-	return
-}
-
 func main() {
+
+	addr := flag.String("addr", ":4000", "HTTP network address")
+	flag.Parse()
+
 	logger.Formatter = new(logrus.JSONFormatter)
 	logger.Level = logrus.TraceLevel
 	logger.Out = os.Stdout
 
-	actorName := "Alice"
-	h := sha1.New()
-	h.Write([]byte(actorName))
-	actorSumHex := h.Sum(nil)
-	actorSum := fmt.Sprintf("%x", actorSumHex)
+	var ppl []*pub.Person
+	app := &application{
+		people: ppl,
+	}
 
-	actorsURL := fmt.Sprintf("%s/actors", apiURL)
-	actorURL := fmt.Sprintf("%s/%s", actorsURL, actorSum)
+	srv := &http.Server{
+		Addr:         *addr,
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
 
+	err := srv.ListenAndServe()
 	logger.WithFields(logrus.Fields{
-		"event":      "SHA1 Sum",
-		"Actor Name": actorName,
-		"Actor Sum":  actorSum,
-		"Actor URL":  actorURL,
-	}).Trace("Actor Sum")
-
-	actors := Actors{}
-	id := pub.IRI(actorURL)
-	a := pub.PersonNew(id)
-	actors.Add(a)
-
-	aj, _ := json.MarshalIndent(a, "", "  ")
-	logger.WithFields(logrus.Fields{
-		"event": "Create",
-		"actor": string(aj),
-	}).Trace("New Person")
-
-	handlerReqs()
+		"event": "ListenAndServeTLS",
+	}).Fatal(err)
 }
 
 /* TODO
@@ -128,7 +84,7 @@ func main() {
 -  create endpoints
 -  listen on endpoints
 
-respond with list of Actors to client
+respond with list of actors to client
 receive message and put in inbox
 
 # Client

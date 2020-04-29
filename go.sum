@@ -6,6 +6,10 @@ github.com/go-ap/activitypub v0.0.0-20200326182444-611ae1db291f h1:gLjfWsOMTd/ZB
 github.com/go-ap/activitypub v0.0.0-20200326182444-611ae1db291f/go.mod h1:gV25Ee+9lELjPp8nQc8VDi504uu74US+RB0ADLYuBt8=
 github.com/go-ap/jsonld v0.0.0-20191123195936-1e43eac08b0c h1:BRmdOzFUh+xsuvBm9kLoHGhZO09Faf/5quzRwMHj+yU=
 github.com/go-ap/jsonld v0.0.0-20191123195936-1e43eac08b0c/go.mod h1:pC3Z5VghKscRVOZyWxaPb5c7w5UzDevoimwHmVV5cqo=
+github.com/go-chi/chi v4.1.1+incompatible h1:MmTgB0R8Bt/jccxp+t6S/1VGIKdJw5J74CK/c9tTfA4=
+github.com/go-chi/chi v4.1.1+incompatible/go.mod h1:eB3wogJHnLi3x/kFX2A+IbTBlXxmMeXJVKy9tTv1XzQ=
+github.com/gorilla/mux v1.7.4 h1:VuZ8uybHlWmqV03+zRzdwKL4tUnIp1MAQtp1mIFE1bc=
+github.com/gorilla/mux v1.7.4/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGiHgQ4OO8tzTaLawm8vnODuwDk=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
