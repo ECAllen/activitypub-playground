@@ -9,6 +9,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"github.com/sirupsen/logrus"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -35,14 +36,6 @@ type application struct {
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	// TODO use context or dependency injection?
-	/* ctx := r.Context()
-	article, ok := ctx.Value("article").(*Article)
-	if !ok {
-		http.Error(w, http.StatusText(422), 422)
-		return
-	}
-	*/
 	w.Write([]byte("OK"))
 }
 
@@ -91,24 +84,36 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		}
 */
 
-func (app *application) actors(w http.ResponseWriter, r *http.Request) {
-	for _, obj := range app.people {
-		fmt.Printf("%+v\n", obj)
-	}
-	ppl, err := json.MarshalIndent(app.people, "", "    ")
+type Actorid struct {
+	Id string `json:"id"`
+}
+
+func (app *application) postInbox(w http.ResponseWriter, r *http.Request) {
+	ID := chi.URLParam(r, "id")
+	var uid = Actorid{Id: ID}
+
+	// get json body from POST
+	decoder := json.NewDecoder(r.Body)
+
+	var note pub.Note
+	err := decoder.Decode(&note)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		log.Fatal(err)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(ppl)
+  fmt.Printf("%v\n",note)
+	json.NewEncoder(w).Encode(uid)
+}
+
+func (app *application) actors(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(app.people)
 }
 
 func (app *application) routes() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", app.home)
 	// TODO double check standard for endpoints
+	r.Post("/actors/{id}/inbox", app.postInbox)
 	r.Get("/actors", app.actors)
 	return r
 }
@@ -174,4 +179,5 @@ send message
 
 public key
 test by sending message to server
+
 */
